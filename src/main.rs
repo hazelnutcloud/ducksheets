@@ -41,10 +41,8 @@ impl Default for Sheet {
     fn default() -> Self {
         Self {
             num_rows: 1000,
-            num_columns: 26,
-            default_column: egui_table::Column::new(100.0)
-                .range(10.0..=500.0)
-                .resizable(true),
+            num_columns: 27,
+            default_column: egui_table::Column::new(100.0).resizable(true),
         }
     }
 }
@@ -67,6 +65,13 @@ impl Sheet {
 
 impl egui_table::TableDelegate for Sheet {
     fn header_cell_ui(&mut self, ui: &mut egui::Ui, cell: &egui_table::HeaderCellInfo) {
+        let egui::Rect { min, max } = ui.max_rect();
+        ui.painter().hline(
+            min.x..=max.x,
+            max.y,
+            ui.visuals().widgets.noninteractive.bg_stroke,
+        );
+
         egui::Frame::none()
             .inner_margin(egui::Margin::symmetric(32.0, 0.0))
             .show(ui, |ui| {
@@ -77,13 +82,29 @@ impl egui_table::TableDelegate for Sheet {
     }
 
     fn cell_ui(&mut self, ui: &mut egui::Ui, cell: &egui_table::CellInfo) {
+        let egui::Rect { min, max } = ui.max_rect();
+        ui.painter().hline(
+            min.x..=max.x,
+            max.y,
+            ui.visuals().widgets.noninteractive.bg_stroke,
+        );
+
         egui::Frame::none()
-            .inner_margin(egui::Margin::symmetric(32.0, 0.0))
+            .inner_margin(egui::Margin::symmetric(
+                if cell.col_nr == 0 { 8.0 } else { 32.0 },
+                0.0,
+            ))
             .show(ui, |ui| {
                 if cell.col_nr == 0 {
-                    ui.label({ cell.row_nr + 1 }.to_string());
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        ui.label({ cell.row_nr + 1 }.to_string());
+                    });
                 }
             });
+    }
+
+    fn default_row_height(&self) -> f32 {
+        32.0
     }
 }
 
